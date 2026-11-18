@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-prbwCvuC+CGYcYbgynVq05eiJ+/ZUjIvZbAGD4Mv1ws='; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>Back to ClipPortal</title>
+<style>
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#fff;color:#211813;font:16px/1.5 system-ui,sans-serif}
+  main{max-width:420px;padding:24px;text-align:center}
+  b{color:#A9480A}
+</style>
+</head>
+<body>
+<main>
+  <p id="msg">Sending you back to <b>ClipPortal</b> on your computer…</p>
+</main>
+<script>
+// TikTok only sends people back to an https address, and ClipPortal runs on this computer at http://localhost:8765.
+// This page passes TikTok's answer straight on to ClipPortal, and nothing else. It keeps nothing and loads nothing.
+// The sign-in code is single-use, expires within minutes, and is worthless without the app secret that only
+// ClipPortal holds; ClipPortal also refuses any answer to a sign-in it did not start itself.
+(function () {
+  var TARGET = "http://localhost:8765/oauth/tiktok/callback";
+  var ALLOWED = {code: /^[\w\-.*~!]{1,1024}$/, state: /^[\w\-]{1,128}$/, scopes: /^[\w.,]{1,512}$/,
+                 error: /^[\w.\-]{1,128}$/, error_description: /^[^<>]{1,300}$/};
+  var got = new URLSearchParams(location.search), out = new URLSearchParams();
+  Object.keys(ALLOWED).forEach(function (k) {
+    var v = got.get(k);
+    if (v !== null && ALLOWED[k].test(v)) out.set(k, v);
+  });
+  history.replaceState(null, "", location.pathname);          // the code leaves the address bar and this page's history
+  if (!out.has("state") || !(out.has("code") || out.has("error"))) {
+    document.getElementById("msg").textContent = "Nothing to pass on. Start again with Connect in ClipPortal.";
+    return;
+  }
+  location.replace(TARGET + "?" + out.toString());
+})();
+</script>
+</body>
+</html>
